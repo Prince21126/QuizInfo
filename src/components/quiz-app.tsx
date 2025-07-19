@@ -6,7 +6,7 @@ import HomeScreen from '@/components/screens/home-screen';
 import QuizScreen from '@/components/screens/quiz-screen';
 import ResultsScreen from '@/components/screens/results-screen';
 import { generateQuizQuestions } from '@/ai/flows/generate-quiz-questions';
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/components/ui/use-toast";
 import { Loader2 } from 'lucide-react';
 
 type AppScreen = 'home' | 'quiz' | 'results';
@@ -18,7 +18,7 @@ type QuizState = {
   score: number;
 };
 
-export default function QuizApp() {
+export function QuizApp() {
   const [screen, setScreen] = useState<AppScreen>('home');
   const [loading, setLoading] = useState(false);
   const [quizState, setQuizState] = useState<Partial<QuizState>>({});

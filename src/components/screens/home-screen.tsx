@@ -14,7 +14,7 @@ interface HomeScreenProps {
   onStartQuiz: (userName: string, domain: string, specialty?: string) => void;
 }
 
-const apiKeyMissing = !process.env.NEXT_PUBLIC_GEMINI_API_KEY || process.env.NEXT_PUBLIC_GEMINI_API_KEY === 'YOUR_API_KEY_HERE';
+const apiKeyMissing = !process.env.NEXT_PUBLIC_GEMINI_API_KEY;
 
 export default function HomeScreen({ onStartQuiz }: HomeScreenProps) {
   const [name, setName] = useState('');
@@ -55,7 +55,7 @@ export default function HomeScreen({ onStartQuiz }: HomeScreenProps) {
                 <AlertTriangle className="h-4 w-4" />
                 <AlertTitle>Configuration requise</AlertTitle>
                 <AlertDescription>
-                  La clé API Gemini est manquante. Veuillez l'ajouter à votre fichier <code>.env</code> pour continuer.
+                  La clé API Gemini est manquante. Veuillez l'ajouter à votre fichier <code>.env</code> et redémarrer le serveur de développement pour continuer.
                 </AlertDescription>
               </Alert>
             )}
