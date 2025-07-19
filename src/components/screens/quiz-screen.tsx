@@ -1,16 +1,18 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import type { QuizQuestion } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
-import { CheckCircle2, XCircle, Loader2 } from 'lucide-react';
+import { CheckCircle2, XCircle, Loader2, AlarmClock } from 'lucide-react';
 
 interface QuizScreenProps {
   questions: QuizQuestion[];
   onQuizComplete: (score: number) => void;
 }
+
+const QUESTION_TIME_LIMIT = 20; // 20 seconds
 
 export default function QuizScreen({ questions, onQuizComplete }: QuizScreenProps) {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -18,35 +20,66 @@ export default function QuizScreen({ questions, onQuizComplete }: QuizScreenProp
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [isAnswered, setIsAnswered] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(QUESTION_TIME_LIMIT);
+
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   const currentQuestion = questions[currentQuestionIndex];
 
-  const handleAnswer = (answerIndex: number) => {
-    if (isAnswered) return;
-
-    setSelectedAnswer(answerIndex);
-    setIsAnswered(true);
-    let newScore = score;
-    if (answerIndex === currentQuestion.correctAnswerIndex) {
-      newScore = score + 1;
-      setScore(newScore);
-    }
-    
+  const moveToNextQuestion = useCallback(() => {
     setIsTransitioning(true);
     setTimeout(() => {
       if (currentQuestionIndex < questions.length - 1) {
         setCurrentQuestionIndex(prevIndex => prevIndex + 1);
       } else {
-        onQuizComplete(newScore);
+        onQuizComplete(score);
       }
       setIsTransitioning(false);
     }, 1500);
-  };
+  }, [currentQuestionIndex, questions.length, onQuizComplete, score]);
   
+  const handleAnswer = useCallback((answerIndex: number | null) => {
+    if (isAnswered) return;
+
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+    }
+    
+    setIsAnswered(true);
+    let newScore = score;
+    if (answerIndex !== null && answerIndex === currentQuestion.correctAnswerIndex) {
+      newScore = score + 1;
+      setScore(newScore);
+    }
+    setSelectedAnswer(answerIndex);
+    
+    moveToNextQuestion();
+  }, [isAnswered, score, currentQuestion.correctAnswerIndex, moveToNextQuestion]);
+
   useEffect(() => {
+    // Reset state for the new question
     setSelectedAnswer(null);
     setIsAnswered(false);
+    setTimeLeft(QUESTION_TIME_LIMIT);
+
+    // Start new timer
+    timerRef.current = setInterval(() => {
+      setTimeLeft(prevTime => prevTime - 1);
+    }, 1000);
+
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+    };
   }, [currentQuestionIndex]);
+  
+  useEffect(() => {
+    if (timeLeft <= 0 && !isAnswered) {
+      handleAnswer(null); // Timeout means wrong answer
+    }
+  }, [timeLeft, isAnswered, handleAnswer]);
+
 
   const getOptionStyle = (optionIndex: number) => {
     if (!isAnswered) {
@@ -61,6 +94,9 @@ export default function QuizScreen({ questions, onQuizComplete }: QuizScreenProp
     if (isSelected && !isCorrect) {
       return 'bg-red-100 border-red-500 text-red-800 dark:bg-red-900/50 dark:border-red-700 dark:text-red-300';
     }
+    if (selectedAnswer === null && !isCorrect) { // Time ran out
+       return 'border-border opacity-50';
+    }
     return 'border-border opacity-60';
   };
   
@@ -69,8 +105,14 @@ export default function QuizScreen({ questions, onQuizComplete }: QuizScreenProp
   return (
     <Card className="w-full max-w-3xl mx-auto shadow-2xl animate-in fade-in duration-500">
       <CardHeader>
-        <div className="flex justify-between items-center gap-4 mb-4">
+        <div className="flex justify-between items-center gap-4 mb-2">
           <CardTitle className="text-xl md:text-2xl">Question {currentQuestionIndex + 1}/{questions.length}</CardTitle>
+          <div className={cn("flex items-center gap-2 font-mono text-lg rounded-full px-3 py-1",
+            timeLeft <= 5 ? "text-destructive font-bold animate-pulse" : "text-muted-foreground"
+          )}>
+            <AlarmClock className="h-5 w-5"/>
+            <span>{String(timeLeft).padStart(2, '0')}s</span>
+          </div>
         </div>
         <Progress value={progressValue} className="w-full" />
       </CardHeader>
@@ -105,6 +147,11 @@ export default function QuizScreen({ questions, onQuizComplete }: QuizScreenProp
              <div className="flex justify-center items-center gap-2 text-muted-foreground animate-in fade-in">
               <p>Prochaine question...</p>
               <Loader2 className="h-4 w-4 animate-spin"/>
+             </div>
+          )}
+          {isAnswered && selectedAnswer === null && (
+             <div className="flex justify-center items-center gap-2 text-destructive font-semibold animate-in fade-in">
+              <p>Temps écoulé !</p>
              </div>
           )}
         </div>

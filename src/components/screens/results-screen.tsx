@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
-import { Award, BookOpen, Repeat, Link as LinkIcon } from 'lucide-react';
+import { Award, BookOpen, Repeat, Link as LinkIcon, Info } from 'lucide-react';
 import Link from 'next/link';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
@@ -131,6 +131,15 @@ export default function ResultsScreen({ score, userName, domain, specialty, tota
               </Card>
             ))}
           </div>
+        )}
+        {!loading && !error && resources.length === 0 && (
+          <Alert>
+            <Info className="h-4 w-4" />
+            <AlertTitle>Aucune ressource trouvée</AlertTitle>
+            <AlertDescription>
+              Nous n'avons pas pu trouver de ressources spécifiques pour cette combinaison de compétences. Essayez une autre évaluation pour de nouvelles recommandations !
+            </AlertDescription>
+          </Alert>
         )}
       </div>
 
