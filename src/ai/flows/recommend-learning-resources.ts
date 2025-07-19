@@ -34,7 +34,9 @@ const LearningResourceSchema = z.object({
 const RecommendLearningResourcesOutputSchema = z.object({
   resources: z
     .array(LearningResourceSchema)
-    .describe('A list of recommended learning resources in French.'),
+    .min(3)
+    .max(5)
+    .describe('A list of 3 to 5 recommended learning resources in French.'),
 });
 export type RecommendLearningResourcesOutput = z.infer<typeof RecommendLearningResourcesOutputSchema>;
 
@@ -48,19 +50,23 @@ const prompt = ai.definePrompt({
   name: 'recommendLearningResourcesPrompt',
   input: {schema: RecommendLearningResourcesInputSchema},
   output: {schema: RecommendLearningResourcesOutputSchema},
-  prompt: `You are an AI assistant designed to recommend learning resources in French.
+  prompt: `Vous êtes un assistant IA expert en recommandation de ressources pédagogiques en français.
 
-  Based on the user's chosen domain, specialty (if applicable), and skill level, recommend 3-5 relevant learning resources (books, tutorials, websites) that are freely available.
+  En vous basant sur le domaine, la spécialité (si fournie) et le niveau de l'utilisateur, recommandez 3 à 5 ressources pertinentes (livres, tutoriels, sites web) qui sont gratuites.
 
-  The resources should be tailored to the user's level, ensuring they are appropriate for their current knowledge and skill set.
+  IMPORTANT : Pour les URLs, fournissez des liens stables et de haut niveau. Par exemple, au lieu d'un lien profond vers un article spécifique, préférez un lien vers la page principale d'un tutoriel ou la page d'accueil d'un site. Pour un livre, un lien vers sa page sur une librairie en ligne connue est préférable à un lien de téléchargement direct qui risque d'être invalide.
 
-  Domain: {{{domain}}}
-  Specialty: {{{specialty}}}
-  Skill Level: {{{skillLevel}}}
+  Les ressources doivent être adaptées au niveau de l'utilisateur.
 
-  Ensure that all resources are in French.
+  Domaine : {{{domain}}}
+  {{#if specialty}}
+  Spécialité : {{{specialty}}}
+  {{/if}}
+  Niveau de compétence : {{{skillLevel}}}
 
-  Format your response as a JSON object conforming to the schema. Each resource should include a title, a short description, and a URL.
+  Assurez-vous que toutes les ressources sont en français.
+
+  Formatez votre réponse en tant qu'objet JSON conforme au schéma. Chaque ressource doit inclure un titre, une courte description et une URL valide.
   `,
 });
 
