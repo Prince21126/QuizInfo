@@ -18,11 +18,6 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  env: {
-    // This makes the GEMINI_API_KEY available to the client side.
-    // It's already available to the server side thanks to `.env`
-    NEXT_PUBLIC_GEMINI_API_KEY: process.env.GEMINI_API_KEY,
-  }
 };
 
 export default nextConfig;
