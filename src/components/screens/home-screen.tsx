@@ -7,14 +7,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { DOMAINS } from '@/lib/data';
-import { BookMarked, AlertTriangle } from 'lucide-react';
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { BookMarked } from 'lucide-react';
 
 interface HomeScreenProps {
   onStartQuiz: (userName: string, domain: string, specialty?: string) => void;
 }
-
-const apiKeyMissing = !process.env.NEXT_PUBLIC_GEMINI_API_KEY;
 
 export default function HomeScreen({ onStartQuiz }: HomeScreenProps) {
   const [name, setName] = useState('');
@@ -29,7 +26,7 @@ export default function HomeScreen({ onStartQuiz }: HomeScreenProps) {
     setSpecialty('');
   };
 
-  const canStart = name.trim() !== '' && domain !== '' && (!hasSpecialties || specialty !== '') && !apiKeyMissing;
+  const canStart = name.trim() !== '' && domain !== '' && (!hasSpecialties || specialty !== '');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,15 +47,6 @@ export default function HomeScreen({ onStartQuiz }: HomeScreenProps) {
             <CardDescription className="text-lg">Évaluez vos connaissances et progressez !</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            {apiKeyMissing && (
-              <Alert variant="destructive">
-                <AlertTriangle className="h-4 w-4" />
-                <AlertTitle>Configuration requise</AlertTitle>
-                <AlertDescription>
-                  La clé API Gemini est manquante. Veuillez l'ajouter à votre fichier <code>.env</code> et redémarrer le serveur de développement pour continuer.
-                </AlertDescription>
-              </Alert>
-            )}
             <div className="space-y-2">
               <Label htmlFor="name" className="text-base">Votre nom</Label>
               <Input 
