@@ -1,4 +1,5 @@
-import type { GenerateQuizQuestionsOutput, RecommendLearningResourcesOutput } from "@/ai/flows/";
+import type { GenerateQuizQuestionsOutput } from "@/ai/flows/generate-quiz-questions";
+import type { RecommendLearningResourcesOutput } from "@/ai/flows/recommend-learning-resources";
 
 export type QuizQuestion = GenerateQuizQuestionsOutput[0];
 export type LearningResource = RecommendLearningResourcesOutput['resources'][0];

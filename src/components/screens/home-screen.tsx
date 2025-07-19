@@ -14,7 +14,7 @@ interface HomeScreenProps {
   onStartQuiz: (userName: string, domain: string, specialty?: string) => void;
 }
 
-const apiKeyMissing = !process.env.NEXT_PUBLIC_GEMINI_API_KEY;
+const apiKeyMissing = !process.env.NEXT_PUBLIC_GEMINI_API_KEY || process.env.NEXT_PUBLIC_GEMINI_API_KEY === 'YOUR_API_KEY_HERE';
 
 export default function HomeScreen({ onStartQuiz }: HomeScreenProps) {
   const [name, setName] = useState('');
@@ -23,6 +23,11 @@ export default function HomeScreen({ onStartQuiz }: HomeScreenProps) {
 
   const selectedDomain = useMemo(() => DOMAINS.find(d => d.value === domain), [domain]);
   const hasSpecialties = selectedDomain && selectedDomain.specialties && selectedDomain.specialties.length > 0;
+
+  const handleDomainChange = (value: string) => {
+    setDomain(value);
+    setSpecialty('');
+  };
 
   const canStart = name.trim() !== '' && domain !== '' && (!hasSpecialties || specialty !== '') && !apiKeyMissing;
 
@@ -50,7 +55,7 @@ export default function HomeScreen({ onStartQuiz }: HomeScreenProps) {
                 <AlertTriangle className="h-4 w-4" />
                 <AlertTitle>Configuration requise</AlertTitle>
                 <AlertDescription>
-                  La clé API Gemini est manquante. Veuillez l'ajouter à votre fichier <code>.env</code> sous le nom <code>NEXT_PUBLIC_GEMINI_API_KEY</code> pour continuer.
+                  La clé API Gemini est manquante. Veuillez l'ajouter à votre fichier <code>.env</code> pour continuer.
                 </AlertDescription>
               </Alert>
             )}
@@ -67,7 +72,7 @@ export default function HomeScreen({ onStartQuiz }: HomeScreenProps) {
             </div>
             <div className="space-y-2">
               <Label htmlFor="domain" className="text-base">Choisissez un domaine</Label>
-              <Select value={domain} onValuechange={value => { setDomain(value); setSpecialty(''); }}>
+              <Select value={domain} onValueChange={handleDomainChange}>
                 <SelectTrigger id="domain" className="text-base">
                   <SelectValue placeholder="Sélectionnez un domaine..." />
                 </SelectTrigger>
