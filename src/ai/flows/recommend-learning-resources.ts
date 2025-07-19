@@ -28,7 +28,7 @@ export type RecommendLearningResourcesInput = z.infer<typeof RecommendLearningRe
 const LearningResourceSchema = z.object({
   title: z.string().describe('The title of the learning resource.'),
   description: z.string().describe('A short description of the learning resource.'),
-  url: z.string().url().describe('The URL where the learning resource can be accessed.'),
+  url: z.string().describe('The URL where the learning resource can be accessed.'),
 });
 
 const RecommendLearningResourcesOutputSchema = z.object({
