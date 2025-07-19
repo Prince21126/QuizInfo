@@ -7,11 +7,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { DOMAINS } from '@/lib/data';
-import { BookMarked } from 'lucide-react';
+import { BookMarked, AlertTriangle } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 interface HomeScreenProps {
   onStartQuiz: (userName: string, domain: string, specialty?: string) => void;
 }
+
+const apiKeyMissing = !process.env.NEXT_PUBLIC_GEMINI_API_KEY;
 
 export default function HomeScreen({ onStartQuiz }: HomeScreenProps) {
   const [name, setName] = useState('');
@@ -21,7 +24,7 @@ export default function HomeScreen({ onStartQuiz }: HomeScreenProps) {
   const selectedDomain = useMemo(() => DOMAINS.find(d => d.value === domain), [domain]);
   const hasSpecialties = selectedDomain && selectedDomain.specialties && selectedDomain.specialties.length > 0;
 
-  const canStart = name.trim() !== '' && domain !== '' && (!hasSpecialties || specialty !== '');
+  const canStart = name.trim() !== '' && domain !== '' && (!hasSpecialties || specialty !== '') && !apiKeyMissing;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,6 +45,15 @@ export default function HomeScreen({ onStartQuiz }: HomeScreenProps) {
             <CardDescription className="text-lg">Évaluez vos connaissances et progressez !</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
+            {apiKeyMissing && (
+              <Alert variant="destructive">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertTitle>Configuration requise</AlertTitle>
+                <AlertDescription>
+                  La clé API Gemini est manquante. Veuillez l'ajouter à votre fichier <code>.env</code> sous le nom <code>NEXT_PUBLIC_GEMINI_API_KEY</code> pour continuer.
+                </AlertDescription>
+              </Alert>
+            )}
             <div className="space-y-2">
               <Label htmlFor="name" className="text-base">Votre nom</Label>
               <Input 
@@ -55,7 +67,7 @@ export default function HomeScreen({ onStartQuiz }: HomeScreenProps) {
             </div>
             <div className="space-y-2">
               <Label htmlFor="domain" className="text-base">Choisissez un domaine</Label>
-              <Select value={domain} onValueChange={value => { setDomain(value); setSpecialty(''); }}>
+              <Select value={domain} onValuechange={value => { setDomain(value); setSpecialty(''); }}>
                 <SelectTrigger id="domain" className="text-base">
                   <SelectValue placeholder="Sélectionnez un domaine..." />
                 </SelectTrigger>
