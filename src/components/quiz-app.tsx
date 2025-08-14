@@ -28,8 +28,9 @@ export function QuizApp() {
   const { toast } = useToast();
   const { addHistoryEntry } = useQuizHistory();
 
-  const handleStartQuiz = useCallback(async (userName: string, domain: string, specialty?: string) => {
+  const handleStartQuiz = useCallback(async (firstName: string, lastName: string, domain: string, specialty?: string) => {
     setLoading(true);
+    const userName = `${firstName} ${lastName}`;
     try {
       const questions = await generateQuizQuestions({ domain, specialty });
       if (questions && questions.length > 0) {

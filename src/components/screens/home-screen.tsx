@@ -11,11 +11,12 @@ import { BookMarked, History } from 'lucide-react';
 import HistoryDrawer from '@/components/history-drawer';
 
 interface HomeScreenProps {
-  onStartQuiz: (userName: string, domain: string, specialty?: string) => void;
+  onStartQuiz: (firstName: string, lastName: string, domain: string, specialty?: string) => void;
 }
 
 export default function HomeScreen({ onStartQuiz }: HomeScreenProps) {
-  const [name, setName] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [domain, setDomain] = useState('');
   const [specialty, setSpecialty] = useState('');
   const [historyOpen, setHistoryOpen] = useState(false);
@@ -28,12 +29,12 @@ export default function HomeScreen({ onStartQuiz }: HomeScreenProps) {
     setSpecialty('');
   };
 
-  const canStart = name.trim() !== '' && domain !== '' && (!hasSpecialties || specialty !== '');
+  const canStart = firstName.trim() !== '' && lastName.trim() !== '' && domain !== '' && (!hasSpecialties || specialty !== '');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (canStart) {
-      onStartQuiz(name, domain, hasSpecialties ? specialty : undefined);
+      onStartQuiz(firstName, lastName, domain, hasSpecialties ? specialty : undefined);
     }
   };
 
@@ -62,16 +63,29 @@ export default function HomeScreen({ onStartQuiz }: HomeScreenProps) {
             <CardDescription className="text-lg">Évaluez vos connaissances et progressez !</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            <div className="space-y-2">
-              <Label htmlFor="name" className="text-base">Votre nom</Label>
-              <Input 
-                id="name" 
-                placeholder="Ex: Jean Dupont" 
-                value={name} 
-                onChange={(e) => setName(e.target.value)} 
-                required 
-                className="text-base"
-              />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+               <div className="space-y-2">
+                <Label htmlFor="firstName" className="text-base">Votre prénom</Label>
+                <Input 
+                  id="firstName" 
+                  placeholder="Ex: Jean" 
+                  value={firstName} 
+                  onChange={(e) => setFirstName(e.target.value)} 
+                  required 
+                  className="text-base"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="lastName" className="text-base">Votre nom de famille</Label>
+                <Input 
+                  id="lastName" 
+                  placeholder="Ex: Dupont" 
+                  value={lastName} 
+                  onChange={(e) => setLastName(e.target.value)} 
+                  required 
+                  className="text-base"
+                />
+              </div>
             </div>
             <div className="space-y-2">
               <Label htmlFor="domain" className="text-base">Choisissez un domaine</Label>
