@@ -1,17 +1,19 @@
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import type { LearningResource, AnsweredQuestion } from '@/lib/types';
 import { recommendLearningResources } from '@/ai/flows/recommend-learning-resources';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
-import { Award, BookOpen, Repeat, Link as LinkIcon, Info, HelpCircle, Check, X } from 'lucide-react';
+import { Award, BookOpen, Repeat, Link as LinkIcon, Info, HelpCircle, X, Download, ShieldCheck } from 'lucide-react';
 import Link from 'next/link';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { cn } from '@/lib/utils';
+import Certificate from '@/components/certificate';
+import { jsPDF } from 'jspdf';
+import html2canvas from 'html2canvas';
 
 interface ResultsScreenProps {
   score: number;
@@ -105,9 +107,29 @@ export default function ResultsScreen({ score, userName, domain, specialty, tota
   const [resources, setResources] = useState<LearningResource[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const certificateRef = useRef<HTMLDivElement>(null);
 
   const percentage = useMemo(() => Math.round((score / totalQuestions) * 100), [score, totalQuestions]);
   const { level, resultMessage, congratsMessage } = useMemo(() => getSkillInfo(percentage), [percentage]);
+  
+  const showCertificate = useMemo(() => percentage >= 80, [percentage]);
+
+  const downloadCertificateAsPdf = async () => {
+    const element = certificateRef.current;
+    if (!element) return;
+  
+    const canvas = await html2canvas(element, { scale: 2 });
+    const data = canvas.toDataURL('image/png');
+  
+    const pdf = new jsPDF({
+      orientation: 'landscape',
+      unit: 'px',
+      format: [canvas.width, canvas.height]
+    });
+  
+    pdf.addImage(data, 'PNG', 0, 0, canvas.width, canvas.height);
+    pdf.save(`Certificat-${userName.replace(' ', '_')}.pdf`);
+  };
 
   useEffect(() => {
     const fetchResources = async () => {
@@ -151,6 +173,29 @@ export default function ResultsScreen({ score, userName, domain, specialty, tota
           </div>
         </CardContent>
       </Card>
+
+      {showCertificate && (
+         <Card className="shadow-2xl">
+            <CardHeader className="text-center">
+                 <div className="mx-auto bg-primary/10 p-3 rounded-full mb-4 w-fit">
+                    <ShieldCheck className="h-8 w-8 text-primary" />
+                 </div>
+                <CardTitle className="text-3xl font-bold">Certificat de Réussite</CardTitle>
+                <CardDescription>Vous avez démontré une connaissance de niveau {level}.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                <div ref={certificateRef}>
+                    <Certificate userName={userName} domain={specialty || domain} level={level} date={new Date().toLocaleDateString('fr-FR')} />
+                </div>
+            </CardContent>
+            <CardFooter className="justify-center">
+                <Button onClick={downloadCertificateAsPdf} size="lg">
+                    <Download className="mr-2 h-5 w-5"/>
+                    Télécharger le certificat
+                </Button>
+            </CardFooter>
+        </Card>
+      )}
 
       <FailedQuestions questions={answeredQuestions} />
       
