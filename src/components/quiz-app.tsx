@@ -8,6 +8,8 @@ import ResultsScreen from '@/components/screens/results-screen';
 import { generateQuizQuestions } from '@/ai/flows/generate-quiz-questions';
 import { useToast } from "@/components/ui/use-toast";
 import { Loader2 } from 'lucide-react';
+import { useQuizHistory } from '@/hooks/use-quiz-history';
+import { getSkillInfo } from '@/lib/utils';
 
 type AppScreen = 'home' | 'quiz' | 'results';
 type QuizState = {
@@ -24,6 +26,7 @@ export function QuizApp() {
   const [loading, setLoading] = useState(false);
   const [quizState, setQuizState] = useState<Partial<QuizState>>({});
   const { toast } = useToast();
+  const { addHistoryEntry } = useQuizHistory();
 
   const handleStartQuiz = useCallback(async (userName: string, domain: string, specialty?: string) => {
     setLoading(true);
@@ -49,9 +52,26 @@ export function QuizApp() {
 
   const handleQuizComplete = useCallback((answeredQuestions: AnsweredQuestion[]) => {
     const score = answeredQuestions.filter(q => q.isCorrect).length;
-    setQuizState(prev => ({ ...prev, answeredQuestions, score }));
+    const totalQuestions = quizState.questions!.length;
+    const percentage = Math.round((score / totalQuestions) * 100);
+    const { level } = getSkillInfo(percentage);
+
+    const newQuizState = { ...quizState, answeredQuestions, score };
+    setQuizState(newQuizState);
+    
+    addHistoryEntry({
+      id: new Date().toISOString(),
+      userName: newQuizState.userName!,
+      domain: newQuizState.domain!,
+      specialty: newQuizState.specialty,
+      score,
+      totalQuestions,
+      level,
+      date: new Date().toLocaleDateString('fr-FR')
+    });
+
     setScreen('results');
-  }, []);
+  }, [quizState, addHistoryEntry]);
 
   const handleRestart = useCallback(() => {
     setQuizState({});

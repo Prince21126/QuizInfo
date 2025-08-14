@@ -14,9 +14,20 @@ export type Domain = {
 
 export type AppScreen = 'home' | 'quiz' | 'results';
 
-export type SkillLevel = 'Débutant / Amateur' | 'Intermédiaire' | 'Confirmé / Avancé' | 'Expert';
+export type SkillLevel = 'Expert' | 'Confirmé / Avancé' | 'Intermédiaire' | 'Débutant / Amateur';
 
 export type AnsweredQuestion = QuizQuestion & {
   userAnswerIndex: number | null;
   isCorrect: boolean;
+};
+
+export type QuizHistoryEntry = {
+    id: string;
+    userName: string;
+    domain: string;
+    specialty?: string;
+    score: number;
+    totalQuestions: number;
+    level: SkillLevel;
+    date: string;
 };

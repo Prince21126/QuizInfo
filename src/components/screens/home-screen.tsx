@@ -7,7 +7,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { DOMAINS } from '@/lib/data';
-import { BookMarked } from 'lucide-react';
+import { BookMarked, History } from 'lucide-react';
+import HistoryDrawer from '@/components/history-drawer';
 
 interface HomeScreenProps {
   onStartQuiz: (userName: string, domain: string, specialty?: string) => void;
@@ -17,6 +18,7 @@ export default function HomeScreen({ onStartQuiz }: HomeScreenProps) {
   const [name, setName] = useState('');
   const [domain, setDomain] = useState('');
   const [specialty, setSpecialty] = useState('');
+  const [historyOpen, setHistoryOpen] = useState(false);
 
   const selectedDomain = useMemo(() => DOMAINS.find(d => d.value === domain), [domain]);
   const hasSpecialties = selectedDomain && selectedDomain.specialties && selectedDomain.specialties.length > 0;
@@ -37,11 +39,24 @@ export default function HomeScreen({ onStartQuiz }: HomeScreenProps) {
 
   return (
     <div className="flex flex-col items-center justify-center">
+       <HistoryDrawer open={historyOpen} onOpenChange={setHistoryOpen} />
       <Card className="w-full max-w-lg shadow-2xl">
         <form onSubmit={handleSubmit}>
           <CardHeader className="text-center">
-            <div className="mx-auto bg-primary/10 p-3 rounded-full mb-4 w-fit">
-              <BookMarked className="h-8 w-8 text-primary" />
+             <div className="flex items-center justify-center">
+                <div className="mx-auto bg-primary/10 p-3 rounded-full mb-4 w-fit">
+                    <BookMarked className="h-8 w-8 text-primary" />
+                </div>
+                <Button 
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="absolute top-4 right-4 text-muted-foreground hover:text-primary"
+                    onClick={() => setHistoryOpen(true)}
+                >
+                    <History className="h-6 w-6" />
+                    <span className="sr-only">Afficher l'historique</span>
+                </Button>
             </div>
             <CardTitle className="text-3xl font-bold">Quiz Informatique</CardTitle>
             <CardDescription className="text-lg">Évaluez vos connaissances et progressez !</CardDescription>
