@@ -17,15 +17,15 @@ export default function Certificate({ userName, domain, level, date }: Certifica
       )} style={{aspectRatio: '1.414 / 1'}}>
       <div className="w-full h-full border-2 border-primary/30 p-6 flex flex-col items-center text-center">
         <header className="flex flex-col items-center mb-2">
-            <BadgeCheck className="h-16 w-16 md:h-20 md:w-20 text-primary mb-2" />
-            <h1 className="font-headline text-3xl md:text-4xl font-bold text-primary" style={{fontFamily: "'Playfair Display', serif"}}>
+            <BadgeCheck className="h-12 w-12 md:h-16 md:w-16 text-primary mb-2" />
+            <h1 className="font-headline text-2xl md:text-3xl font-bold text-primary" style={{fontFamily: "'Playfair Display', serif"}}>
                 Certificat de Réussite
             </h1>
             <p className="text-base md:text-lg mt-2 text-muted-foreground">Ce certificat est fièrement décerné à</p>
         </header>
         
         <section className="my-1">
-            <h2 className="text-3xl md:text-5xl font-bold font-headline text-accent" style={{fontFamily: "'Playfair Display', serif"}}>
+            <h2 className="text-2xl md:text-4xl font-bold font-headline text-accent" style={{fontFamily: "'Playfair Display', serif"}}>
                 {userName}
             </h2>
         </section>
