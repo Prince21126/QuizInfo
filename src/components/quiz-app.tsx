@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useCallback } from 'react';
-import type { QuizQuestion } from '@/lib/types';
+import type { QuizQuestion, AnsweredQuestion } from '@/lib/types';
 import HomeScreen from '@/components/screens/home-screen';
 import QuizScreen from '@/components/screens/quiz-screen';
 import ResultsScreen from '@/components/screens/results-screen';
@@ -12,6 +12,7 @@ import { Loader2 } from 'lucide-react';
 type AppScreen = 'home' | 'quiz' | 'results';
 type QuizState = {
   questions: QuizQuestion[];
+  answeredQuestions: AnsweredQuestion[];
   domain: string;
   specialty?: string;
   userName: string;
@@ -29,7 +30,7 @@ export function QuizApp() {
     try {
       const questions = await generateQuizQuestions({ domain, specialty });
       if (questions && questions.length > 0) {
-        setQuizState({ userName, domain, specialty, questions, score: 0 });
+        setQuizState({ userName, domain, specialty, questions, answeredQuestions: [], score: 0 });
         setScreen('quiz');
       } else {
         throw new Error("Le quiz n'a pas pu être généré.");
@@ -46,8 +47,9 @@ export function QuizApp() {
     }
   }, [toast]);
 
-  const handleQuizComplete = useCallback((score: number) => {
-    setQuizState(prev => ({ ...prev, score }));
+  const handleQuizComplete = useCallback((answeredQuestions: AnsweredQuestion[]) => {
+    const score = answeredQuestions.filter(q => q.isCorrect).length;
+    setQuizState(prev => ({ ...prev, answeredQuestions, score }));
     setScreen('results');
   }, []);
 
@@ -73,6 +75,7 @@ export function QuizApp() {
             domain={quizState.domain!}
             specialty={quizState.specialty}
             totalQuestions={quizState.questions!.length}
+            answeredQuestions={quizState.answeredQuestions!}
             onRestart={handleRestart}
           />
         );

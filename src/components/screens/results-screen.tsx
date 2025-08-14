@@ -1,15 +1,17 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
-import type { LearningResource } from '@/lib/types';
+import type { LearningResource, AnsweredQuestion } from '@/lib/types';
 import { recommendLearningResources } from '@/ai/flows/recommend-learning-resources';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
-import { Award, BookOpen, Repeat, Link as LinkIcon, Info } from 'lucide-react';
+import { Award, BookOpen, Repeat, Link as LinkIcon, Info, HelpCircle, Check, X } from 'lucide-react';
 import Link from 'next/link';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { cn } from '@/lib/utils';
 
 interface ResultsScreenProps {
   score: number;
@@ -17,14 +19,31 @@ interface ResultsScreenProps {
   domain: string;
   specialty?: string;
   totalQuestions: number;
+  answeredQuestions: AnsweredQuestion[];
   onRestart: () => void;
 }
 
-const getSkillLevel = (percentage: number): { level: 'Expert' | 'Confirmé / Avancé' | 'Intermédiaire' | 'Débutant / Amateur', message: string } => {
-  if (percentage >= 90) return { level: 'Expert', message: "Félicitations ! Votre expertise est impressionnante. Continuez à explorer les sujets avancés." };
-  if (percentage >= 75) return { level: 'Confirmé / Avancé', message: "Excellent travail ! Vous maîtrisez bien le sujet. Approfondissez vos connaissances pour devenir un expert." };
-  if (percentage >= 50) return { level: 'Intermédiaire', message: "Vous avez de solides connaissances ! Continuez sur cette lancée pour consolider vos acquis." };
-  return { level: 'Débutant / Amateur', message: "C'est un bon début ! Les ressources ci-dessous vous aideront à construire une base solide." };
+const getSkillInfo = (percentage: number): { level: 'Expert' | 'Confirmé / Avancé' | 'Intermédiaire' | 'Débutant / Amateur', resultMessage: string, congratsMessage: string } => {
+  if (percentage >= 80) return { 
+    level: 'Expert', 
+    resultMessage: "Votre expertise est impressionnante. Continuez à explorer les sujets avancés.",
+    congratsMessage: `Félicitations, ${percentage}% c'est un score d'expert !`
+  };
+  if (percentage >= 70) return { 
+    level: 'Confirmé / Avancé', 
+    resultMessage: "Vous maîtrisez bien le sujet. Approfondissez vos connaissances pour devenir un expert.",
+    congratsMessage: `Félicitations, ${percentage}% est un excellent score !` 
+  };
+  if (percentage >= 60) return { 
+    level: 'Intermédiaire', 
+    resultMessage: "Vous avez de solides connaissances ! Continuez sur cette lancée pour consolider vos acquis.",
+    congratsMessage: `Bravo pour ce ${percentage}% !`
+  };
+  return { 
+    level: 'Débutant / Amateur', 
+    resultMessage: "C'est un bon début ! Les ressources ci-dessous vous aideront à construire une base solide.",
+    congratsMessage: "Chaque expert a commencé par les bases."
+  };
 };
 
 function ResourceSkeleton() {
@@ -44,13 +63,51 @@ function ResourceSkeleton() {
     )
 }
 
-export default function ResultsScreen({ score, userName, domain, specialty, totalQuestions, onRestart }: ResultsScreenProps) {
+function FailedQuestions({ questions }: { questions: AnsweredQuestion[] }) {
+  const failed = questions.filter(q => !q.isCorrect);
+
+  if (failed.length === 0) {
+    return null;
+  }
+
+  return (
+    <div className="space-y-4">
+      <h2 className="text-2xl md:text-3xl font-bold flex items-center gap-3">
+        <HelpCircle className="h-8 w-8 text-primary" />
+        Correction des erreurs
+      </h2>
+      <Accordion type="single" collapsible className="w-full">
+        {failed.map((q, i) => (
+          <AccordionItem key={i} value={`item-${i}`}>
+            <AccordionTrigger>
+              <div className="flex items-center gap-3 text-left">
+                <X className="h-5 w-5 text-destructive flex-shrink-0" />
+                <span className="flex-1">{q.question}</span>
+              </div>
+            </AccordionTrigger>
+            <AccordionContent className="space-y-3 pl-8">
+              <p className="text-destructive text-base">
+                <span className="font-semibold">Votre réponse :</span> {q.userAnswerIndex !== null ? q.options[q.userAnswerIndex] : "Pas de réponse (temps écoulé)"}
+              </p>
+              <p className="text-green-600 dark:text-green-400 text-base">
+                <span className="font-semibold">Réponse correcte :</span> {q.options[q.correctAnswerIndex]}
+              </p>
+            </AccordionContent>
+          </AccordionItem>
+        ))}
+      </Accordion>
+    </div>
+  );
+}
+
+
+export default function ResultsScreen({ score, userName, domain, specialty, totalQuestions, answeredQuestions, onRestart }: ResultsScreenProps) {
   const [resources, setResources] = useState<LearningResource[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const percentage = useMemo(() => Math.round((score / totalQuestions) * 100), [score, totalQuestions]);
-  const { level, message } = useMemo(() => getSkillLevel(percentage), [percentage]);
+  const { level, resultMessage, congratsMessage } = useMemo(() => getSkillInfo(percentage), [percentage]);
 
   useEffect(() => {
     const fetchResources = async () => {
@@ -80,8 +137,8 @@ export default function ResultsScreen({ score, userName, domain, specialty, tota
            <div className="mx-auto bg-accent/10 p-4 rounded-full mb-4 w-fit">
               <Award className="h-10 w-10 text-accent" />
             </div>
-          <CardTitle className="text-3xl md:text-4xl font-bold">Bravo, {userName} !</CardTitle>
-          <CardDescription className="text-lg md:text-xl">Voici vos résultats.</CardDescription>
+          <CardTitle className="text-3xl md:text-4xl font-bold">{congratsMessage}</CardTitle>
+          <CardDescription className="text-lg md:text-xl">Bravo, {userName} ! Voici vos résultats.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="flex justify-center items-baseline gap-4">
@@ -90,10 +147,12 @@ export default function ResultsScreen({ score, userName, domain, specialty, tota
           </div>
           <div className="space-y-2">
             <Badge variant="outline" className="text-lg px-4 py-1 border-accent text-accent">{level}</Badge>
-            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">{message}</p>
+            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">{resultMessage}</p>
           </div>
         </CardContent>
       </Card>
+
+      <FailedQuestions questions={answeredQuestions} />
       
       <div className="space-y-4">
         <h2 className="text-2xl md:text-3xl font-bold flex items-center gap-3">

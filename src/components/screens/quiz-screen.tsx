@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import type { QuizQuestion } from '@/lib/types';
+import type { QuizQuestion, AnsweredQuestion } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
@@ -9,21 +9,20 @@ import { CheckCircle2, XCircle, Loader2, AlarmClock } from 'lucide-react';
 
 interface QuizScreenProps {
   questions: QuizQuestion[];
-  onQuizComplete: (score: number) => void;
+  onQuizComplete: (answeredQuestions: AnsweredQuestion[]) => void;
 }
 
-const QUESTION_TIME_LIMIT = 20; // 20 seconds
+const QUESTION_TIME_LIMIT = 15; // 15 seconds
 
 export default function QuizScreen({ questions, onQuizComplete }: QuizScreenProps) {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [score, setScore] = useState(0);
+  const [answeredQuestions, setAnsweredQuestions] = useState<AnsweredQuestion[]>([]);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [isAnswered, setIsAnswered] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [timeLeft, setTimeLeft] = useState(QUESTION_TIME_LIMIT);
 
   const timerRef = useRef<NodeJS.Timeout | null>(null);
-
   const currentQuestion = questions[currentQuestionIndex];
 
   const moveToNextQuestion = useCallback(() => {
@@ -32,13 +31,13 @@ export default function QuizScreen({ questions, onQuizComplete }: QuizScreenProp
       if (currentQuestionIndex < questions.length - 1) {
         setCurrentQuestionIndex(prevIndex => prevIndex + 1);
       } else {
-        onQuizComplete(score);
+        onQuizComplete(answeredQuestions);
       }
       setIsTransitioning(false);
     }, 1500);
-  }, [currentQuestionIndex, questions.length, onQuizComplete, score]);
+  }, [currentQuestionIndex, questions.length, onQuizComplete, answeredQuestions]);
   
-  const handleAnswer = useCallback((answerIndex: number | null) => {
+  const handleAnswer = useCallback((userAnswerIndex: number | null) => {
     if (isAnswered) return;
 
     if (timerRef.current) {
@@ -46,15 +45,18 @@ export default function QuizScreen({ questions, onQuizComplete }: QuizScreenProp
     }
     
     setIsAnswered(true);
-    let newScore = score;
-    if (answerIndex !== null && answerIndex === currentQuestion.correctAnswerIndex) {
-      newScore = score + 1;
-      setScore(newScore);
-    }
-    setSelectedAnswer(answerIndex);
+    const isCorrect = userAnswerIndex !== null && userAnswerIndex === currentQuestion.correctAnswerIndex;
+    
+    setAnsweredQuestions(prev => [...prev, {
+      ...currentQuestion,
+      userAnswerIndex,
+      isCorrect,
+    }]);
+
+    setSelectedAnswer(userAnswerIndex);
     
     moveToNextQuestion();
-  }, [isAnswered, score, currentQuestion.correctAnswerIndex, moveToNextQuestion]);
+  }, [isAnswered, currentQuestion, moveToNextQuestion]);
 
   useEffect(() => {
     // Reset state for the new question
