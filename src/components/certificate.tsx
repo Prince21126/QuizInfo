@@ -16,25 +16,25 @@ export default function Certificate({ userName, domain, level, date }: Certifica
         "w-full max-w-[800px] mx-auto flex flex-col font-serif"
       )} style={{aspectRatio: '1.414 / 1'}}>
       <div className="w-full h-full border-2 border-primary/30 p-6 flex flex-col items-center text-center">
-        <header className="flex flex-col items-center mb-4">
-            <BadgeCheck className="h-16 w-16 md:h-20 md:w-20 text-primary mb-3" />
-            <h1 className="font-headline text-4xl md:text-5xl font-bold text-primary" style={{fontFamily: "'Playfair Display', serif"}}>
+        <header className="flex flex-col items-center mb-2">
+            <BadgeCheck className="h-16 w-16 md:h-20 md:w-20 text-primary mb-2" />
+            <h1 className="font-headline text-3xl md:text-4xl font-bold text-primary" style={{fontFamily: "'Playfair Display', serif"}}>
                 Certificat de Réussite
             </h1>
-            <p className="text-base md:text-lg mt-3 text-muted-foreground">Ce certificat est fièrement décerné à</p>
+            <p className="text-base md:text-lg mt-2 text-muted-foreground">Ce certificat est fièrement décerné à</p>
         </header>
         
         <section className="my-1">
-            <h2 className="text-4xl md:text-6xl font-bold font-headline text-accent" style={{fontFamily: "'Playfair Display', serif"}}>
+            <h2 className="text-3xl md:text-5xl font-bold font-headline text-accent" style={{fontFamily: "'Playfair Display', serif"}}>
                 {userName}
             </h2>
         </section>
 
-        <section className="my-4 text-center">
+        <section className="my-2 text-center">
             <p className="text-base md:text-lg text-muted-foreground">pour avoir démontré avec succès des compétences de niveau</p>
-            <p className="text-2xl md:text-3xl font-bold text-primary my-1">{level}</p>
+            <p className="text-xl md:text-2xl font-bold text-primary my-1">{level}</p>
             <p className="text-base md:text-lg text-muted-foreground">dans le domaine de</p>
-            <p className="text-2xl md:text-3xl font-bold text-primary mt-1">{domain}</p>
+            <p className="text-xl md:text-2xl font-bold text-primary mt-1">{domain}</p>
         </section>
 
         <footer className="w-full flex justify-between items-center mt-auto pt-4">
