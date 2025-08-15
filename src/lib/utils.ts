@@ -1,30 +1,33 @@
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
+import { i18n, type Language } from './i18n';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
 
-export const getSkillInfo = (percentage: number): { level: 'Expert' | 'Confirmé / Avancé' | 'Intermédiaire' | 'Débutant / Amateur', resultMessage: string, congratsMessage: string } => {
+export const getSkillInfo = (percentage: number, lang: Language, userName?: string): { level: 'Expert' | 'Confirmé / Avancé' | 'Intermédiaire' | 'Débutant / Amateur' | 'Advanced' | 'Intermediate' | 'Beginner', resultMessage: string, congratsMessage: string } => {
+  const t = i18n[lang];
+
   if (percentage >= 80) return { 
-    level: 'Expert', 
-    resultMessage: "Votre expertise est impressionnante. Continuez à explorer les sujets avancés.",
-    congratsMessage: `Félicitations, ${percentage}% c'est un score d'expert !`
+    level: t.skillLevels.expert, 
+    resultMessage: t.skillMessages.expertResult,
+    congratsMessage: t.skillMessages.expertCongrats(percentage)
   };
   if (percentage >= 70) return { 
-    level: 'Confirmé / Avancé', 
-    resultMessage: "Vous maîtrisez bien le sujet. Approfondissez vos connaissances pour devenir un expert.",
-    congratsMessage: `Félicitations, ${percentage}% est un excellent score !` 
+    level: lang === 'fr' ? t.skillLevels.advanced : 'Advanced', 
+    resultMessage: t.skillMessages.advancedResult,
+    congratsMessage: t.skillMessages.advancedCongrats(percentage) 
   };
   if (percentage >= 60) return { 
-    level: 'Intermédiaire', 
-    resultMessage: "Vous avez de solides connaissances ! Continuez sur cette lancée pour consolider vos acquis.",
-    congratsMessage: `Bravo pour ce ${percentage}% !`
+    level: t.skillLevels.intermediate, 
+    resultMessage: t.skillMessages.intermediateResult,
+    congratsMessage: t.skillMessages.intermediateCongrats(percentage)
   };
   return { 
-    level: 'Débutant / Amateur', 
-    resultMessage: "C'est un bon début ! Les ressources ci-dessous vous aideront à construire une base solide.",
-    congratsMessage: "Chaque expert a commencé par les bases."
+    level: lang === 'fr' ? t.skillLevels.beginner : 'Beginner',
+    resultMessage: t.skillMessages.beginnerResult,
+    congratsMessage: t.skillMessages.beginnerCongrats
   };
 };

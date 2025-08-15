@@ -10,6 +10,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { Loader2 } from 'lucide-react';
 import { useQuizHistory } from '@/hooks/use-quiz-history';
 import { getSkillInfo } from '@/lib/utils';
+import { useLanguage } from '@/components/language-provider';
 
 type AppScreen = 'home' | 'quiz' | 'results';
 type QuizState = {
@@ -27,35 +28,36 @@ export function QuizApp() {
   const [quizState, setQuizState] = useState<Partial<QuizState>>({});
   const { toast } = useToast();
   const { addHistoryEntry } = useQuizHistory();
+  const { language, t } = useLanguage();
 
   const handleStartQuiz = useCallback(async (firstName: string, lastName: string, domain: string, specialty?: string) => {
     setLoading(true);
     const userName = `${firstName} ${lastName}`;
     try {
-      const questions = await generateQuizQuestions({ domain, specialty });
+      const questions = await generateQuizQuestions({ domain, specialty, language });
       if (questions && questions.length > 0) {
         setQuizState({ userName, domain, specialty, questions, answeredQuestions: [], score: 0 });
         setScreen('quiz');
       } else {
-        throw new Error("Le quiz n'a pas pu être généré.");
+        throw new Error(t.quizApp.generateError);
       }
     } catch (error) {
       console.error(error);
       toast({
         variant: "destructive",
-        title: "Erreur",
-        description: "Impossible de générer le quiz. Veuillez réessayer.",
+        title: t.toast.errorTitle,
+        description: t.quizApp.generateError,
       });
     } finally {
       setLoading(false);
     }
-  }, [toast]);
+  }, [toast, language, t]);
 
   const handleQuizComplete = useCallback((answeredQuestions: AnsweredQuestion[]) => {
     const score = answeredQuestions.filter(q => q.isCorrect).length;
     const totalQuestions = quizState.questions!.length;
     const percentage = Math.round((score / totalQuestions) * 100);
-    const { level } = getSkillInfo(percentage);
+    const { level } = getSkillInfo(percentage, language);
 
     const newQuizState = { ...quizState, answeredQuestions, score };
     setQuizState(newQuizState);
@@ -68,11 +70,11 @@ export function QuizApp() {
       score,
       totalQuestions,
       level,
-      date: new Date().toLocaleDateString('fr-FR')
+      date: new Date().toLocaleDateString(language === 'fr' ? 'fr-FR' : 'en-US')
     });
 
     setScreen('results');
-  }, [quizState, addHistoryEntry]);
+  }, [quizState, addHistoryEntry, language]);
 
   const handleRestart = useCallback(() => {
     setQuizState({});
@@ -112,8 +114,8 @@ export function QuizApp() {
         {loading ? (
           <div className="flex flex-col items-center justify-center gap-4 text-center">
              <Loader2 className="h-12 w-12 animate-spin text-primary" />
-             <p className="text-lg font-medium text-foreground">Génération du quiz en cours...</p>
-             <p className="text-muted-foreground">Cela peut prendre quelques instants.</p>
+             <p className="text-lg font-medium text-foreground">{t.quizApp.loadingTitle}</p>
+             <p className="text-muted-foreground">{t.quizApp.loadingDescription}</p>
           </div>
         ) : (
           renderScreen()

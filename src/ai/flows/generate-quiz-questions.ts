@@ -13,14 +13,15 @@ import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
 const GenerateQuizQuestionsInputSchema = z.object({
-  domain: z.string().describe('The main domain of the quiz (e.g., Développement Logiciel, Cybersécurité).'),
+  domain: z.string().describe('The main domain of the quiz (e.g., Software Development, Cybersecurity).'),
   specialty: z.string().optional().describe('The specific area within the domain (e.g., Web Frontend, Mobile).'),
+  language: z.enum(['fr', 'en']).describe('The language for the quiz (fr for French, en for English).'),
 });
 
 export type GenerateQuizQuestionsInput = z.infer<typeof GenerateQuizQuestionsInputSchema>;
 
 const QuizQuestionSchema = z.object({
-  question: z.string().describe('The quiz question in French.'),
+  question: z.string().describe('The quiz question in the specified language.'),
   options: z.array(z.string()).length(4).describe('Four possible answers to the question, one of which is correct.'),
   correctAnswerIndex: z.number().int().min(0).max(3).describe('The index (0-3) of the correct answer in the options array.'),
 });
@@ -41,23 +42,26 @@ const prompt = ai.definePrompt({
   output: {
     schema: GenerateQuizQuestionsOutputSchema,
   },
-  prompt: `Vous êtes un système expert chargé de générer des évaluations techniques rigoureuses en français.
+  prompt: `You are an expert system responsible for generating rigorous technical assessments.
 
-  Générez un quiz de 20 questions à choix multiples (QCM) en français pour le domaine : {{domain}}.
+  The user's requested language is: {{language}}. ALL content you generate must be in this language.
+  
+  Generate a quiz of 20 multiple-choice questions (MCQ) for the domain: {{domain}}.
   {{#if specialty}}
-  La spécialité est : {{specialty}}.
+  The specialty is: {{specialty}}.
   {{/if}}
 
-  EXIGENCES STRICTES :
-  1.  **Difficulté Élevée et Progressive** : Les 10 premières questions doivent être de niveau intermédiaire. Les 10 dernières questions (11 à 20) doivent être particulièrement complexes, destinées à des experts et portant sur des concepts pointus, des cas d'usage non triviaux ou des problématiques avancées.
-  2.  **Précision et Concision** : Chaque question doit être formulée de manière claire, concise, et sans aucune ambiguïté.
-  3.  **NON-RÉPÉTITION STRICTE** : Ne répétez JAMAIS les questions. Chaque génération de quiz pour un même domaine doit produire un ensemble de questions entièrement nouveau et original. C'est une règle impérative.
-  4.  **Options Crédibles** : Les options de réponse incorrectes doivent être plausibles et pertinentes pour tester une compréhension approfondie, et non une simple reconnaissance de termes.
-  5.  **Langage** : Le langage doit être exclusivement le français.
+  STRICT REQUIREMENTS:
+  1.  **High and Progressive Difficulty**: The first 10 questions should be of intermediate level. The last 10 questions (11 to 20) must be particularly complex, aimed at experts and covering advanced concepts, non-trivial use cases, or advanced issues.
+  2.  **Precision and Concision**: Each question must be formulated clearly, concisely, and without any ambiguity.
+  3.  **STRICT NON-REPETITION**: NEVER repeat questions. Each quiz generation for the same domain must produce an entirely new and original set of questions. This is a mandatory rule.
+  4.  **Credible Options**: Incorrect answer options must be plausible and relevant to test deep understanding, not just term recognition.
+  5.  **Language**: All content must be exclusively in the requested language ({{language}}).
 
-  Le format de sortie doit être un tableau JSON de 20 objets, où chaque objet représente une question et respecte la structure définie.
+  The output format must be a JSON array of 20 objects, where each object represents a question and follows the defined structure.
   `,
 });
+
 
 const generateQuizQuestionsFlow = ai.defineFlow(
   {

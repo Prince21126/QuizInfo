@@ -12,7 +12,7 @@ import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
 const RecommendLearningResourcesInputSchema = z.object({
-  domain: z.string().describe('The chosen domain of the quiz (e.g., Développement Logiciel).'),
+  domain: z.string().describe('The chosen domain of the quiz (e.g., Software Development).'),
   specialty: z
     .string()
     .optional()
@@ -20,8 +20,9 @@ const RecommendLearningResourcesInputSchema = z.object({
   skillLevel: z
     .string()
     .describe(
-      'The skill level of the user, as determined by their quiz score (e.g., Débutant, Intermédiaire, Avancé, Expert).'
+      "The skill level of the user, as determined by their quiz score (e.g., Beginner, Intermediate, Advanced, Expert)."
     ),
+  language: z.enum(['fr', 'en']).describe('The language for the recommendations (fr for French, en for English).'),
 });
 export type RecommendLearningResourcesInput = z.infer<typeof RecommendLearningResourcesInputSchema>;
 
@@ -36,7 +37,7 @@ const RecommendLearningResourcesOutputSchema = z.object({
     .array(LearningResourceSchema)
     .min(3)
     .max(5)
-    .describe('A list of 3 to 5 recommended learning resources in French.'),
+    .describe('A list of 3 to 5 recommended learning resources in the specified language.'),
 });
 export type RecommendLearningResourcesOutput = z.infer<typeof RecommendLearningResourcesOutputSchema>;
 
@@ -50,23 +51,22 @@ const prompt = ai.definePrompt({
   name: 'recommendLearningResourcesPrompt',
   input: {schema: RecommendLearningResourcesInputSchema},
   output: {schema: RecommendLearningResourcesOutputSchema},
-  prompt: `Vous êtes un assistant IA expert en recommandation de ressources pédagogiques en français.
+  prompt: `You are an AI assistant expert in recommending educational resources. Your response must be in the language: {{{language}}}.
 
-  En vous basant sur le domaine, la spécialité (si fournie) et le niveau de l'utilisateur, recommandez 3 à 5 ressources pertinentes (livres, tutoriels, sites web) qui sont gratuites.
+  Based on the domain, specialty (if provided), and user's skill level, recommend 3 to 5 relevant resources (books, tutorials, websites) that are free.
 
-  IMPORTANT : Pour les URLs, fournissez des liens stables et de haut niveau. Par exemple, au lieu d'un lien profond vers un article spécifique, préférez un lien vers la page principale d'un tutoriel ou la page d'accueil d'un site. Pour un livre, un lien vers sa page sur une librairie en ligne connue est préférable à un lien de téléchargement direct qui risque d'être invalide.
+  IMPORTANT: For URLs, provide stable, high-level links. For example, instead of a deep link to a specific article, prefer a link to a tutorial's main page or a website's homepage. For a book, a link to its page on a well-known online bookstore is better than a direct download link that might become invalid.
 
-  Les ressources doivent être adaptées au niveau de l'utilisateur.
+  The resources must be adapted to the user's skill level and be in the specified language.
 
-  Domaine : {{{domain}}}
+  Domain: {{{domain}}}
   {{#if specialty}}
-  Spécialité : {{{specialty}}}
+  Specialty: {{{specialty}}}
   {{/if}}
-  Niveau de compétence : {{{skillLevel}}}
+  Skill Level: {{{skillLevel}}}
+  Language: {{{language}}}
 
-  Assurez-vous que toutes les ressources sont en français.
-
-  Formatez votre réponse en tant qu'objet JSON conforme au schéma. Chaque ressource doit inclure un titre, une courte description et une URL valide.
+  Format your response as a JSON object conforming to the schema. Each resource must include a title, a short description, and a valid URL.
   `,
 });
 

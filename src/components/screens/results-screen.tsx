@@ -15,6 +15,7 @@ import Certificate from '@/components/certificate';
 import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
 import { getSkillInfo } from '@/lib/utils';
+import { useLanguage } from '@/components/language-provider';
 
 
 interface ResultsScreenProps {
@@ -45,6 +46,7 @@ function ResourceSkeleton() {
 }
 
 function FailedQuestions({ questions }: { questions: AnsweredQuestion[] }) {
+  const { t } = useLanguage();
   const failed = questions.filter(q => !q.isCorrect);
 
   if (failed.length === 0) {
@@ -55,7 +57,7 @@ function FailedQuestions({ questions }: { questions: AnsweredQuestion[] }) {
     <div className="space-y-4">
       <h2 className="text-2xl md:text-3xl font-bold flex items-center gap-3">
         <HelpCircle className="h-8 w-8 text-primary" />
-        Correction des erreurs
+        {t.results.correctionsTitle}
       </h2>
       <Accordion type="single" collapsible className="w-full">
         {failed.map((q, i) => (
@@ -68,10 +70,10 @@ function FailedQuestions({ questions }: { questions: AnsweredQuestion[] }) {
             </AccordionTrigger>
             <AccordionContent className="space-y-3 pl-8">
               <p className="text-destructive text-base">
-                <span className="font-semibold">Votre réponse :</span> {q.userAnswerIndex !== null ? q.options[q.userAnswerIndex] : "Pas de réponse (temps écoulé)"}
+                <span className="font-semibold">{t.results.yourAnswer}:</span> {q.userAnswerIndex !== null ? q.options[q.userAnswerIndex] : t.results.noAnswer}
               </p>
               <p className="text-green-600 dark:text-green-400 text-base">
-                <span className="font-semibold">Réponse correcte :</span> {q.options[q.correctAnswerIndex]}
+                <span className="font-semibold">{t.results.correctAnswer}:</span> {q.options[q.correctAnswerIndex]}
               </p>
             </AccordionContent>
           </AccordionItem>
@@ -87,9 +89,10 @@ export default function ResultsScreen({ score, userName, domain, specialty, tota
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const certificateRef = useRef<HTMLDivElement>(null);
+  const { language, t } = useLanguage();
 
   const percentage = useMemo(() => Math.round((score / totalQuestions) * 100), [score, totalQuestions]);
-  const { level, resultMessage, congratsMessage } = useMemo(() => getSkillInfo(percentage), [percentage]);
+  const { level, resultMessage, congratsMessage } = useMemo(() => getSkillInfo(percentage, language, userName), [percentage, language, userName]);
   
   const showCertificate = useMemo(() => percentage >= 80, [percentage]);
 
@@ -107,7 +110,7 @@ export default function ResultsScreen({ score, userName, domain, specialty, tota
     });
   
     pdf.addImage(data, 'PNG', 0, 0, canvas.width, canvas.height);
-    pdf.save(`Certificat-${userName.replace(' ', '_')}.pdf`);
+    pdf.save(`Certificate-${userName.replace(' ', '_')}.pdf`);
   };
 
   useEffect(() => {
@@ -119,17 +122,18 @@ export default function ResultsScreen({ score, userName, domain, specialty, tota
           domain,
           specialty,
           skillLevel: level,
+          language,
         });
         setResources(result.resources);
       } catch (e) {
         console.error("Failed to fetch resources:", e);
-        setError("Impossible de charger les ressources recommandées. Veuillez réessayer plus tard.");
+        setError(t.results.resourcesError);
       } finally {
         setLoading(false);
       }
     };
     fetchResources();
-  }, [domain, specialty, level]);
+  }, [domain, specialty, level, language, t.results.resourcesError]);
 
   return (
     <div className="w-full max-w-5xl mx-auto space-y-8 animate-in fade-in duration-500">
@@ -139,7 +143,7 @@ export default function ResultsScreen({ score, userName, domain, specialty, tota
               <Award className="h-10 w-10 text-accent" />
             </div>
           <CardTitle className="text-3xl md:text-4xl font-bold">{congratsMessage}</CardTitle>
-          <CardDescription className="text-lg md:text-xl">Bravo, {userName} ! Voici vos résultats.</CardDescription>
+          <CardDescription className="text-lg md:text-xl">{t.results.subtitle(userName)}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="flex justify-center items-baseline gap-4">
@@ -159,18 +163,18 @@ export default function ResultsScreen({ score, userName, domain, specialty, tota
                  <div className="mx-auto bg-primary/10 p-3 rounded-full mb-4 w-fit">
                     <ShieldCheck className="h-8 w-8 text-primary" />
                  </div>
-                <CardTitle className="text-3xl font-bold">Certificat de Réussite</CardTitle>
-                <CardDescription>Vous avez démontré une connaissance de niveau {level}.</CardDescription>
+                <CardTitle className="text-3xl font-bold">{t.results.certificateTitle}</CardTitle>
+                <CardDescription>{t.results.certificateDescription(level)}</CardDescription>
             </CardHeader>
             <CardContent>
                 <div ref={certificateRef}>
-                    <Certificate userName={userName} domain={specialty || domain} level={level} date={new Date().toLocaleDateString('fr-FR')} />
+                    <Certificate userName={userName} domain={specialty || domain} level={level} date={new Date().toLocaleDateString(language === 'fr' ? 'fr-FR' : 'en-US')} />
                 </div>
             </CardContent>
             <CardFooter className="justify-center">
                 <Button onClick={downloadCertificateAsPdf} size="lg">
                     <Download className="mr-2 h-5 w-5"/>
-                    Télécharger le certificat
+                    {t.results.downloadButton}
                 </Button>
             </CardFooter>
         </Card>
@@ -181,7 +185,7 @@ export default function ResultsScreen({ score, userName, domain, specialty, tota
       <div className="space-y-4">
         <h2 className="text-2xl md:text-3xl font-bold flex items-center gap-3">
             <BookOpen className="h-8 w-8 text-primary"/>
-            Ressources pour progresser
+            {t.results.resourcesTitle}
         </h2>
         {loading && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -190,7 +194,7 @@ export default function ResultsScreen({ score, userName, domain, specialty, tota
         )}
         {error && (
              <Alert variant="destructive">
-                <AlertTitle>Erreur</AlertTitle>
+                <AlertTitle>{t.toast.errorTitle}</AlertTitle>
                 <AlertDescription>{error}</AlertDescription>
             </Alert>
         )}
@@ -207,7 +211,7 @@ export default function ResultsScreen({ score, userName, domain, specialty, tota
                 <CardFooter>
                     <Button asChild variant="outline">
                         <Link href={res.url} target="_blank" rel="noopener noreferrer">
-                            Consulter <LinkIcon className="ml-2 h-4 w-4" />
+                            {t.results.viewResource} <LinkIcon className="ml-2 h-4 w-4" />
                         </Link>
                     </Button>
                 </CardFooter>
@@ -218,9 +222,9 @@ export default function ResultsScreen({ score, userName, domain, specialty, tota
         {!loading && !error && resources.length === 0 && (
           <Alert>
             <Info className="h-4 w-4" />
-            <AlertTitle>Aucune ressource trouvée</AlertTitle>
+            <AlertTitle>{t.results.noResourcesTitle}</AlertTitle>
             <AlertDescription>
-              Nous n'avons pas pu trouver de ressources spécifiques pour cette combinaison de compétences. Essayez une autre évaluation pour de nouvelles recommandations !
+              {t.results.noResourcesDescription}
             </AlertDescription>
           </Alert>
         )}
@@ -229,7 +233,7 @@ export default function ResultsScreen({ score, userName, domain, specialty, tota
       <div className="text-center mt-8">
         <Button size="lg" onClick={onRestart} className="text-lg py-7 px-8">
           <Repeat className="mr-2 h-5 w-5" />
-          Faire une nouvelle évaluation
+          {t.results.restartButton}
         </Button>
       </div>
     </div>

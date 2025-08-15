@@ -9,6 +9,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { DOMAINS } from '@/lib/data';
 import { BookMarked, History } from 'lucide-react';
 import HistoryDrawer from '@/components/history-drawer';
+import { useLanguage } from '@/components/language-provider';
+import LanguageSwitcher from '@/components/language-switcher';
 
 interface HomeScreenProps {
   onStartQuiz: (firstName: string, lastName: string, domain: string, specialty?: string) => void;
@@ -20,8 +22,10 @@ export default function HomeScreen({ onStartQuiz }: HomeScreenProps) {
   const [domain, setDomain] = useState('');
   const [specialty, setSpecialty] = useState('');
   const [historyOpen, setHistoryOpen] = useState(false);
+  const { language, t } = useLanguage();
 
-  const selectedDomain = useMemo(() => DOMAINS.find(d => d.value === domain), [domain]);
+  const domains = useMemo(() => DOMAINS(language), [language]);
+  const selectedDomain = useMemo(() => domains.find(d => d.value === domain), [domain, domains]);
   const hasSpecialties = selectedDomain && selectedDomain.specialties && selectedDomain.specialties.length > 0;
 
   const handleDomainChange = (value: string) => {
@@ -44,6 +48,9 @@ export default function HomeScreen({ onStartQuiz }: HomeScreenProps) {
       <Card className="w-full max-w-lg shadow-2xl">
         <form onSubmit={handleSubmit}>
           <CardHeader className="text-center">
+             <div className="absolute top-4 left-4">
+                <LanguageSwitcher />
+            </div>
              <div className="flex items-center justify-center">
                 <div className="mx-auto bg-primary/10 p-3 rounded-full mb-4 w-fit">
                     <BookMarked className="h-8 w-8 text-primary" />
@@ -56,19 +63,19 @@ export default function HomeScreen({ onStartQuiz }: HomeScreenProps) {
                     onClick={() => setHistoryOpen(true)}
                 >
                     <History className="h-6 w-6" />
-                    <span className="sr-only">Afficher l'historique</span>
+                    <span className="sr-only">{t.home.historyButton}</span>
                 </Button>
             </div>
-            <CardTitle className="text-3xl font-bold">Quiz Informatique</CardTitle>
-            <CardDescription className="text-lg">Évaluez vos connaissances et progressez !</CardDescription>
+            <CardTitle className="text-3xl font-bold">{t.home.title}</CardTitle>
+            <CardDescription className="text-lg">{t.home.description}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                <div className="space-y-2">
-                <Label htmlFor="firstName" className="text-base">Votre prénom</Label>
+                <Label htmlFor="firstName" className="text-base">{t.home.firstNameLabel}</Label>
                 <Input 
                   id="firstName" 
-                  placeholder="Ex: Jean" 
+                  placeholder={t.home.firstNamePlaceholder} 
                   value={firstName} 
                   onChange={(e) => setFirstName(e.target.value)} 
                   required 
@@ -76,10 +83,10 @@ export default function HomeScreen({ onStartQuiz }: HomeScreenProps) {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="lastName" className="text-base">Votre nom de famille</Label>
+                <Label htmlFor="lastName" className="text-base">{t.home.lastNameLabel}</Label>
                 <Input 
                   id="lastName" 
-                  placeholder="Ex: Dupont" 
+                  placeholder={t.home.lastNamePlaceholder} 
                   value={lastName} 
                   onChange={(e) => setLastName(e.target.value)} 
                   required 
@@ -88,13 +95,13 @@ export default function HomeScreen({ onStartQuiz }: HomeScreenProps) {
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="domain" className="text-base">Choisissez un domaine</Label>
+              <Label htmlFor="domain" className="text-base">{t.home.domainLabel}</Label>
               <Select value={domain} onValueChange={handleDomainChange}>
                 <SelectTrigger id="domain" className="text-base">
-                  <SelectValue placeholder="Sélectionnez un domaine..." />
+                  <SelectValue placeholder={t.home.domainPlaceholder} />
                 </SelectTrigger>
                 <SelectContent>
-                  {DOMAINS.map(d => (
+                  {domains.map(d => (
                     <SelectItem key={d.value} value={d.value} className="text-base">{d.label}</SelectItem>
                   ))}
                 </SelectContent>
@@ -102,10 +109,10 @@ export default function HomeScreen({ onStartQuiz }: HomeScreenProps) {
             </div>
             {hasSpecialties && (
               <div className="space-y-2 animate-in fade-in duration-500">
-                <Label htmlFor="specialty" className="text-base">Choisissez une spécialité</Label>
+                <Label htmlFor="specialty" className="text-base">{t.home.specialtyLabel}</Label>
                 <Select value={specialty} onValueChange={setSpecialty}>
                   <SelectTrigger id="specialty" className="text-base">
-                    <SelectValue placeholder="Sélectionnez une spécialité..." />
+                    <SelectValue placeholder={t.home.specialtyPlaceholder} />
                   </SelectTrigger>
                   <SelectContent>
                     {selectedDomain.specialties!.map(s => (
@@ -118,7 +125,7 @@ export default function HomeScreen({ onStartQuiz }: HomeScreenProps) {
           </CardContent>
           <CardFooter>
             <Button type="submit" disabled={!canStart} className="w-full text-lg py-6">
-              Commencer l'évaluation
+              {t.home.startButton}
             </Button>
           </CardFooter>
         </form>

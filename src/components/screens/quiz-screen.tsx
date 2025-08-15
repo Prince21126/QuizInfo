@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
 import { CheckCircle2, XCircle, Loader2, AlarmClock } from 'lucide-react';
+import { useLanguage } from '@/components/language-provider';
 
 interface QuizScreenProps {
   questions: QuizQuestion[];
@@ -21,6 +22,7 @@ export default function QuizScreen({ questions, onQuizComplete }: QuizScreenProp
   const [isAnswered, setIsAnswered] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [timeLeft, setTimeLeft] = useState(QUESTION_TIME_LIMIT);
+  const { t } = useLanguage();
 
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const currentQuestion = questions[currentQuestionIndex];
@@ -108,7 +110,7 @@ export default function QuizScreen({ questions, onQuizComplete }: QuizScreenProp
     <Card className="w-full max-w-3xl mx-auto shadow-2xl animate-in fade-in duration-500">
       <CardHeader>
         <div className="flex justify-between items-center gap-4 mb-2">
-          <CardTitle className="text-xl md:text-2xl">Question {currentQuestionIndex + 1}/{questions.length}</CardTitle>
+          <CardTitle className="text-xl md:text-2xl">{t.quiz.question} {currentQuestionIndex + 1}/{questions.length}</CardTitle>
           <div className={cn("flex items-center gap-2 font-mono text-lg rounded-full px-3 py-1",
             timeLeft <= 5 ? "text-destructive font-bold animate-pulse" : "text-muted-foreground"
           )}>
@@ -147,13 +149,13 @@ export default function QuizScreen({ questions, onQuizComplete }: QuizScreenProp
         <div className="mt-8 text-center h-10">
           {isTransitioning && currentQuestionIndex < questions.length - 1 && (
              <div className="flex justify-center items-center gap-2 text-muted-foreground animate-in fade-in">
-              <p>Prochaine question...</p>
+              <p>{t.quiz.nextQuestion}</p>
               <Loader2 className="h-4 w-4 animate-spin"/>
              </div>
           )}
           {isAnswered && selectedAnswer === null && (
              <div className="flex justify-center items-center gap-2 text-destructive font-semibold animate-in fade-in">
-              <p>Temps écoulé !</p>
+              <p>{t.quiz.timeUp}</p>
              </div>
           )}
         </div>
