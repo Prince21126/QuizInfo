@@ -41,27 +41,21 @@ const prompt = ai.definePrompt({
   output: {
     schema: GenerateQuizQuestionsOutputSchema,
   },
-  prompt: `Vous êtes un professeur expert et exigeant, spécialisé dans la création de quiz informatiques en français.
+  prompt: `Vous êtes un système expert chargé de générer des évaluations techniques rigoureuses en français.
 
-  Générez un quiz de 20 questions à choix multiples (QCM) en français, basé sur le domaine suivant : {{domain}}.
+  Générez un quiz de 20 questions à choix multiples (QCM) en français pour le domaine : {{domain}}.
   {{#if specialty}}
   La spécialité est : {{specialty}}.
   {{/if}}
 
-  CRITÈRES IMPORTANTS :
-  1.  **Difficulté Progressive** : Les 10 premières questions doivent couvrir les niveaux débutant et intermédiaire. Les 10 dernières questions (11 à 20) doivent être complexes et destinées à des utilisateurs avancés et experts, testant des concepts pointus et des cas d'usage spécifiques.
-  2.  **Pertinence et Précision** : Chaque question doit être pertinente, précise et sans ambiguïté.
-  3.  **Originalité** : Évitez les questions trop communes ou triviales. Proposez des questions qui suscitent la réflexion. Ne jamais répéter les mêmes questions si l'on vous le demande à nouveau pour le même domaine.
-  4.  **Options Crédibles** : Les options incorrectes (distracteurs) doivent être plausibles et bien conçues pour tester une véritable compréhension, et non une simple mémorisation.
+  EXIGENCES STRICTES :
+  1.  **Difficulté Élevée et Progressive** : Les 10 premières questions doivent être de niveau intermédiaire. Les 10 dernières questions (11 à 20) doivent être particulièrement complexes, destinées à des experts et portant sur des concepts pointus, des cas d'usage non triviaux ou des problématiques avancées.
+  2.  **Précision et Concision** : Chaque question doit être formulée de manière claire, concise, et sans aucune ambiguïté.
+  3.  **NON-RÉPÉTITION STRICTE** : Ne répétez JAMAIS les questions. Chaque génération de quiz pour un même domaine doit produire un ensemble de questions entièrement nouveau et original. C'est une règle impérative.
+  4.  **Options Crédibles** : Les options de réponse incorrectes doivent être plausibles et pertinentes pour tester une compréhension approfondie, et non une simple reconnaissance de termes.
+  5.  **Langage** : Le langage doit être exclusivement le français.
 
-  Chaque question doit avoir 4 options de réponse, et une seule doit être correcte.
-
-  Le format de sortie doit être un tableau JSON de 20 objets, où chaque objet représente une question et a la structure suivante:
-  {
-    "question": "La question du quiz en français",
-    "options": ["Option 1", "Option 2", "Option 3", "Option 4"],
-    "correctAnswerIndex": l'index (0-3) de la réponse correcte dans le tableau options
-  }
+  Le format de sortie doit être un tableau JSON de 20 objets, où chaque objet représente une question et respecte la structure définie.
   `,
 });
 
