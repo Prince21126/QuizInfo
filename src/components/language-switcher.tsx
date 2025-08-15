@@ -16,13 +16,12 @@ export default function LanguageSwitcher() {
   return (
     <Button 
       variant="ghost" 
-      size="icon" 
       onClick={toggleLanguage}
-      className="text-muted-foreground hover:text-primary"
-      aria-label="Changer de langue"
+      className="text-muted-foreground hover:text-primary flex items-center gap-2 px-3"
+      aria-label={language === 'fr' ? "Switch to English" : "Changer en Français"}
     >
-      <Languages className="h-6 w-6" />
-      <span className="ml-2 font-semibold uppercase">{language === 'fr' ? 'EN' : 'FR'}</span>
+      <Languages className="h-5 w-5" />
+      <span className="font-semibold uppercase">{language === 'fr' ? 'EN' : 'FR'}</span>
     </Button>
   );
 }
