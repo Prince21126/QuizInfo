@@ -7,10 +7,30 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { DOMAINS } from '@/lib/data';
-import { BookMarked, History } from 'lucide-react';
+import { History } from 'lucide-react';
 import HistoryDrawer from '@/components/history-drawer';
 import { useLanguage } from '@/components/language-provider';
 import LanguageSwitcher from '@/components/language-switcher';
+
+const Logo = () => (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="h-14 w-14 text-primary"
+    >
+        <path d="M15.5 22a.5.5 0 0 1-.5-.5v-2a.5.5 0 0 1 .5-.5h.5a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.5.5h-.5Z" />
+        <path d="M12 17.5a.5.5 0 0 1-.5-.5v-2a.5.5 0 0 1 .5-.5h.5a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.5.5h-.5Z" />
+        <path d="M8.5 17.5a.5.5 0 0 1-.5-.5v-2a.5.5 0 0 1 .5-.5h.5a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.5.5h-.5Z" />
+        <path d="M12 13a3.5 3.5 0 0 0 3.5-3.5C15.5 7.5 12 2 12 2s-3.5 5.5-3.5 7.5A3.5 3.5 0 0 0 12 13Z" />
+        <path d="M19.5 12.5c0-3.5-4-8-7.5-8s-7.5 4.5-7.5 8" />
+        <path d="M19.5 13c0 1-1 2-2 2h-11c-1 0-2-1-2-2" />
+    </svg>
+)
 
 interface HomeScreenProps {
   onStartQuiz: (firstName: string, lastName: string, domain: string, specialty?: string) => void;
@@ -53,7 +73,7 @@ export default function HomeScreen({ onStartQuiz }: HomeScreenProps) {
             </div>
              <div className="flex items-center justify-center">
                 <div className="mx-auto bg-primary/10 p-3 rounded-full mb-4 w-fit">
-                    <BookMarked className="h-8 w-8 text-primary" />
+                    <Logo />
                 </div>
                 <Button 
                     type="button"
