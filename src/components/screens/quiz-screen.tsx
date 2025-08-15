@@ -12,7 +12,7 @@ interface QuizScreenProps {
   onQuizComplete: (answeredQuestions: AnsweredQuestion[]) => void;
 }
 
-const QUESTION_TIME_LIMIT = 15; // 15 seconds
+const QUESTION_TIME_LIMIT = 20; // 20 seconds
 
 export default function QuizScreen({ questions, onQuizComplete }: QuizScreenProps) {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
